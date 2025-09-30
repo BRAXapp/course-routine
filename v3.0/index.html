@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BRAX Course Assistant</title>
+  <link rel="stylesheet" href="styles.css" />
+<!-- Google tag (gtag.js) for Brax -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S0FR0BDJS1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S0FR0BDJS1');
+</script>
+</head>
+<body>
+  <header>
+    <h1>BRAX Course Assistant v3</h1>
+    <p class="muted">Dynamic course selection and routine builder for BRAC University
+</p>
+  </header>
+
+  <main>
+    <section id="search-area">
+      <input id="search" placeholder="Search course code (e.g. CSE221) or faculty (e.g. MLDH)" />
+      <button id="refresh">Refresh Now</button>
+      <div id="results"></div>
+    </section>
+
+    <section id="timetable-wrap">
+      <div id="legend">
+        <div class="legend-item"><span class="pill class-pill"></span> Class</div>
+        <div class="legend-item"><span class="pill lab-pill"></span> Lab</div>
+        <div class="legend-item"><span class="pill ghost-pill"></span> Hover preview</div>
+      </div>
+
+      <div id="timetable">
+        <!-- Days header -->
+        <div id="days">
+          <div class="day-col day-header">Time</div>
+          <div class="day-col day-header">SUNDAY</div>
+          <div class="day-col day-header">MONDAY</div>
+          <div class="day-col day-header">TUESDAY</div>
+          <div class="day-col day-header">WEDNESDAY</div>
+          <div class="day-col day-header">THURSDAY</div>
+          <div class="day-col day-header">FRIDAY</div>
+          <div class="day-col day-header">SATURDAY</div>
+        </div>
+
+        <!-- time gutter and grid container for absolute-positioned blocks -->
+        <div id="grid-wrap">
+          <div id="time-gutter"></div>
+          <div id="grid"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="cart-area">
+      <h2>Cart</h2>
+      <div id="cart-controls">
+        <button id="clear-cart">Clear All</button>
+      </div>
+      <div id="cart-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Data fetched from <code>https://usis-cdn.eniamza.com/connect.json</code> (polls every 60s).</small>
+  </footer>
+
+  <script src="script.js"></script>
+<style>body{margin:0;overflow:hidden}#intro{position:fixed;top:0;left:0;width:100vw;height:100vh;background:black;display:flex;justify-content:center;align-items:center;z-index:9999;opacity:1;animation:fadeOut .5s ease-in-out forwards;animation-delay:0.5s}#intro img{width:150px;animation:pulse 1s infinite}@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.01);opacity:.7}}@keyframes fadeOut{from{opacity:1}to{opacity:0;visibility:hidden}}</style><div id="intro"><img src="https://dewanmukto.github.io/asset/images/classic_logo.png" alt="Logo"></div><script>document.getElementById("intro").addEventListener("animationend",()=>{document.getElementById("intro").style.display="none";document.body.style.overflow="auto"});</script>
+</body>
+</html>

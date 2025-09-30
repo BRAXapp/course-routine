@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BRAX Course Assistant</title>
+  <meta name="description" content="Dynamic course selection and routine builder for BRAC University" />
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Google tag (gtag.js) for Brax3 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S0FR0BDJS1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S0FR0BDJS1');
+</script>
+  <style>
+    :root{
+      --bg:#0b0f14; --bg-soft:#0f141b; --card:#121923; --muted:#9fb0c3; --text:#e8f0f7; --brand:#4f8cff; --brand-2:#61d6a9; --danger:#ff6b6b;
+      --yellow:#ffd166; --orange:#ff922b; --green:#2ecc71; --red:#e03131; --black:#111; --border:#1f2a38; --success:#10b981;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#0c1219 30%,#0b1119 100%);color:var(--text)}
+    a{color:var(--brand)}
+    .container{max-width:1200px;margin:0 auto;padding:16px}
+
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 0}
+    .title{display:flex;gap:12px;align-items:center}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#7aa7ff);display:grid;place-items:center;color:#001a4d;box-shadow:0 6px 18px rgba(79,140,255,.35)}
+    h1{font-size:1.3rem;margin:0}
+    .subtitle{font-size:.9rem;color:var(--muted)}
+
+    /* Layouts */
+    .grid{display:grid;gap:16px}
+    /* Desktop */
+    @media (min-width: 980px){
+      .layout{grid-template-columns: 360px 1fr 320px; align-items:start}
+      .mobile-only{display:none!important}
+      .mobile-cart-fab{display:none!important}
+    }
+    /* Mobile */
+    @media (max-width: 979px){
+      .layout{grid-template-columns: 1fr}
+      .desktop-only{display:none!important}
+      .cart-panel{display:none!important}
+      .mobile-cart-fab{display:block!important}
+    }
+
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .panel header{padding:12px 16px;border-bottom:1px solid var(--border)}
+    .panel .content{padding:12px 16px}
+
+    .searchbar{display:flex;gap:8px;background:var(--bg-soft);border:1px solid var(--border);padding:10px 12px;border-radius:12px}
+    .searchbar input{flex:1;background:transparent;border:0;outline:none;color:var(--text)}
+    .chip{border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:.8rem;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer;transition:all 0.2s ease}
+    .chip:hover{background:var(--bg-soft);border-color:var(--brand)}
+
+    /* Cards */
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+    .card{background:var(--bg-soft);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:180px;transition:all 0.2s ease}
+    .card:hover{border-color:var(--brand);box-shadow:0 8px 25px rgba(79,140,255,.2)}
+    .card h3{margin:0;font-size:1rem}
+    .card.conflict { background: rgba(255, 107, 107, 0.15); border: 1px solid var(--danger); }
+    .card.exact-match { border: 2px solid var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+    .card.partial-match { border: 2px solid var(--yellow); box-shadow: 0 0 20px rgba(255, 209, 102, 0.2); }
+    .card.recommended { border: 2px solid var(--brand-2); box-shadow: 0 0 20px rgba(97, 214, 169, 0.2); }
+    .meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:.85rem}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:.75rem}
+    .seat{font-weight:600}
+
+    .btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:linear-gradient(180deg,#141c26,#0f151d);color:var(--text);cursor:pointer;text-decoration:none;transition:all 0.2s ease}
+    .btn:hover{background:linear-gradient(180deg,#1a2330,#131a23);border-color:var(--brand)}
+    .btn[disabled]{opacity:.45;cursor:not-allowed}
+    .btn-primary{background:linear-gradient(180deg,#3b6fe8,#2d4fbf);border-color:#2a4bb8}
+    .btn-primary:hover{background:linear-gradient(180deg,#4a7de9,#3655c7)}
+    .btn-success{background:linear-gradient(180deg,#0ea578,#0d8560);border-color:#0c7a58}
+    .btn-ghost{background:transparent}
+    .btn-ghost:hover{background:rgba(255,255,255,0.05)}
+
+    /* Cart */
+    .cart-list{display:flex;flex-direction:column;gap:10px}
+    .cart-item{display:grid;grid-template-columns: 1fr auto;gap:8px;align-items:center;padding:8px;border:1px dashed var(--border);border-radius:10px}
+    .cart-item .remove{color:var(--danger);cursor:pointer;padding:4px;border-radius:4px;transition:all 0.2s ease}
+    .cart-item .remove:hover{background:rgba(255,107,107,0.1)}
+
+    /* Mobile Cart */
+    .mobile-cart-fab{position:fixed;right:16px;bottom:80px;z-index:45;display:none}
+    .mobile-cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:55;padding:0}
+    .mobile-cart{width:100%;max-height:85vh;overflow:auto;background:var(--card);border-radius:20px 20px 0 0;border:1px solid var(--border);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+
+    /* AI Search Section */
+    .ai-section{background:linear-gradient(135deg,rgba(79,140,255,0.1),rgba(97,214,169,0.1));border:1px solid rgba(79,140,255,0.3);border-radius:16px;margin-top:16px}
+    .ai-header{display:flex;align-items:center;gap:8px;background:rgba(79,140,255,0.15);padding:12px 16px;border-radius:15px 15px 0 0;border-bottom:1px solid rgba(79,140,255,0.2)}
+    .ai-content{padding:16px}
+    .ai-description{background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;margin-bottom:16px;font-size:0.9rem;line-height:1.4}
+    .ai-form-group{margin-bottom:16px}
+    .ai-form-group label{display:block;font-weight:500;margin-bottom:6px;color:var(--text)}
+    .ai-input-group{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+    .ai-input{flex:1;min-width:140px;background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:8px;color:var(--text);font-size:0.9rem}
+    .ai-input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 2px rgba(79,140,255,0.2)}
+    .ai-select{background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:8px;color:var(--text);min-width:120px}
+    .ai-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .ai-tag{background:var(--brand);color:#001a4d;padding:4px 8px;border-radius:6px;font-size:0.8rem;display:flex;align-items:center;gap:4px}
+    .ai-tag .remove{cursor:pointer;font-weight:bold}
+    .ai-actions{display:flex;gap:8px;margin-top:20px}
+    .ai-results{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+    .ai-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .match-section{margin-bottom:20px}
+    .match-header{font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+
+    /* Routine */
+    .fab{position:fixed;right:16px;bottom:16px;z-index:50}
+    .fab button{padding:14px 16px;border-radius:999px;box-shadow:0 8px 25px rgba(79,140,255,.4)}
+
+    .routine-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:60}
+    .routine{width:min(1100px,96vw);max-height:92vh;overflow:auto;padding:16px}
+
+    .timetable{display:grid;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;z-index:1}
+    .tt-header, .tt-row{display:grid;grid-template-columns: 90px repeat(7, 1fr)}
+    .tt-header div, .tt-row div{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px;font-size:.8rem}
+    .tt-header div{background:#0e1620;color:#e8f0f7;font-weight:600}
+    .tt-row .timecell{background:#0e1620;color:#e8f0f7;font-weight:600}
+    .tt-row div:not(.timecell){color:var(--muted);background:var(--bg-soft)}
+
+    .slot{position:relative;border-radius:8px;padding:6px 8px;margin:2px;font-size:.78rem;line-height:1.1;background:linear-gradient(135deg,var(--brand),#7aa7ff);color:#001a4d;box-shadow:0 6px 18px rgba(79,140,255,.35);z-index:2}
+    .slot.lab{background:linear-gradient(135deg,#61d6a9,#3fbf93);color:#003322}
+    .slot > div { margin-bottom: 4px; }
+    .slot > div:last-child { margin-bottom: 0; }
+
+    /* Seat indicator colors */
+    .seat.green{background:rgba(46,204,113,.18);border:1px solid rgba(46,204,113,.35);color:#b3f6d0}
+    .seat.yellow{background:rgba(255,209,102,.15);border:1px solid rgba(255,209,102,.35);color:#ffeab3}
+    .seat.orange{background:rgba(255,146,43,.15);border:1px solid rgba(255,146,43,.35);color:#ffd1ad}
+    .seat.red{background:rgba(224,49,49,.15);border:1px solid rgba(224,49,49,.35);color:#ffb3b3}
+    .seat.black{background:#0a0a0a;border:1px solid #333;color:#bbb}
+
+    .skeleton{background:linear-gradient(90deg,#0f151d 25%,#111925 37%,#0f151d 63%);background-size:400% 100%;animation:sk 1.2s ease-in-out infinite}
+    @keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card.ai-result { animation: fadeIn 0.3s ease-out; }
+    
+    /* Print styles */
+    @media print {
+      .routine-overlay { position: static !important; background: none !important; backdrop-filter: none !important; }
+      .routine { width: 100% !important; max-height: none !important; padding: 0 !important; }
+      .panel { box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title">
+        <div class="logo"><i class="ti ti-calendar-bolt"></i></div>
+        <div>
+          <h1>BRAX Course Assistant</h1>
+          <div class="subtitle">Dynamic course selection and routine builder for BRAC University</div>
+        </div>
+      </div>
+      <div class="desktop-only" id="lastUpdated" title="Auto-refreshes every 30s">–</div>
+    </header>
+
+    <div class="grid layout">
+      <!-- Left: Filters & AI -->
+      <div class="grid">
+        <!-- Filters Section -->
+        <section class="panel">
+          <header>
+            <strong><i class="ti ti-filter"></i> Filters & Search</strong>
+          </header>
+          <div class="content">
+            <div class="searchbar" title="Search by course code (e.g., CSE111), section, title, or faculty">
+              <i class="ti ti-search"></i>
+              <input id="search" placeholder="Search courses…" autocomplete="off" />
+              <button class="btn btn-ghost" id="clearSearch" title="Clear"><i class="ti ti-x"></i></button>
+            </div>
+            <div style="height:8px"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="chip" id="toggleShowLabs"><i class="ti ti-flask"></i> Show labs</span>
+              <span class="chip" id="toggleOnlyVacant"><i class="ti ti-users"></i> Only with seats</span>
+              <span class="chip" id="toggleClashFree"><i class="ti ti-shield-check"></i> Hide clashes vs cart</span>
+              <span class="chip" id="toggleDaySun"></span>
+              <span class="chip" id="toggleDayMon"></span>
+              <span class="chip" id="toggleDayTue"></span>
+              <span class="chip" id="toggleDayWed"></span>
+              <span class="chip" id="toggleDayThu"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- AI Search Section -->
+        <section class="panel ai-section">
+          <div class="ai-header">
+            <i class="ti ti-brain" style="color:#4f8cff"></i>
+            <strong>AI Course Assistant</strong>
+          </div>
+          <div class="ai-content">
+            <div class="ai-description">
+              <strong>Smart Course Discovery:</strong> Enter your preferred course codes, days, and faculty to find exact matches, similar alternatives, and intelligent recommendations based on your schedule preferences.
+            </div>
+            
+            <div class="ai-form-group">
+              <label><i class="ti ti-book"></i> Course Codes</label>
+              <div class="ai-input-group">
+                <input type="text" class="ai-input" id="aiCourseInput" placeholder="e.g. CSE111 (to confirm, use +)">
+                <button class="btn btn-ghost" id="addCourse"><i class="ti ti-plus"></i></button>
+              </div>
+              <div class="ai-tags" id="coursesTags"></div>
+            </div>
+
+            <div class="ai-form-group">
+              <label><i class="ti ti-calendar"></i> Preferred Days</label>
+              <div class="ai-input-group">
+                <select class="ai-select" id="aiDaySelect">
+                  <option value="">Select day...</option>
+                  <option value="SUNDAY">Sunday</option>
+                  <option value="MONDAY">Monday</option>
+                  <option value="TUESDAY">Tuesday</option>
+                  <option value="WEDNESDAY">Wednesday</option>
+                  <option value="THURSDAY">Thursday</option>
+                  <option value="FRIDAY">Friday</option>
+                  <option value="SATURDAY">Saturday</option>
+                </select>
+                <button class="btn btn-ghost" id="addDay"><i class="ti ti-plus"></i></button>
+              </div>
+              <div class="ai-tags" id="daysTags"></div>
+            </div>
+
+            <div class="ai-form-group">
+              <label><i class="ti ti-user"></i> Faculty Preferences</label>
+              <div class="ai-input-group">
+                <input type="text" class="ai-input" id="aiFacultyInput" placeholder="e.g. FGZ (to confirm, use +)">
+                <button class="btn btn-ghost" id="addFaculty"><i class="ti ti-plus"></i></button>
+              </div>
+              <div class="ai-tags" id="facultyTags"></div>
+            </div>
+
+            <div class="ai-actions">
+              <button class="btn btn-success" id="aiGo"><i class="ti ti-sparkles"></i> Generate Combos</button>
+              <button class="btn btn-ghost" id="aiClear"><i class="ti ti-refresh"></i> Clear All</button>
+            </div>
+
+            <div id="aiResults" class="ai-results" style="display:none">
+              <div class="ai-results-header">
+                <strong><i class="ti ti-target"></i> AI Results</strong>
+                <button class="btn btn-ghost" id="closeAiResults"><i class="ti ti-x"></i></button>
+              </div>
+              <div id="combinationResults" class="match-section"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Middle: Results -->
+      <section class="panel" style="min-height:400px">
+        <header style="display:flex;align-items:center;justify-content:space-between">
+          <strong><i class="ti ti-list-details"></i> Available Sections</strong>
+          <div class="mobile-only" id="lastUpdatedMobile" title="Auto-refreshes every 30s">–</div>
+        </header>
+        <div class="content">
+          <div id="cards" class="cards"></div>
+          <div id="emptyState" style="display:none;text-align:center;padding:30px;color:var(--muted)">
+            <i class="ti ti-inbox" style="font-size:48px;opacity:.6"></i>
+            <div>No courses match your filter.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Cart (Desktop Only) -->
+      <aside class="panel cart-panel">
+        <header>
+          <strong><i class="ti ti-shopping-cart"></i> Your Cart</strong>
+        </header>
+        <div class="content">
+          <div class="cart-list" id="cartList"></div>
+          <div id="cartEmpty" style="color:var(--muted);text-align:center;padding:12px">No courses yet.</div>
+          <div style="display:flex;gap:8px;justify-content:space-between;margin-top:10px">
+            <button id="clearCart" class="btn" title="Remove all"><i class="ti ti-trash"></i> Clear</button>
+            <button id="exportCart" class="btn" title="Copy JSON"><i class="ti ti-code"></i> Export</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Mobile Cart FAB -->
+  <div class="mobile-cart-fab">
+    <button id="openMobileCart" class="btn btn-primary">
+      <i class="ti ti-shopping-cart"></i> 
+      Cart <span id="cartCount">0</span>
+    </button>
+  </div>
+
+  <!-- Mobile Cart Overlay -->
+  <div class="mobile-cart-overlay" id="mobileCartOverlay">
+    <div class="mobile-cart">
+      <header style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--border)">
+        <strong><i class="ti ti-shopping-cart"></i> Your Cart</strong>
+        <button id="closeMobileCart" class="btn btn-ghost"><i class="ti ti-x"></i></button>
+      </header>
+      <div style="padding:16px">
+        <div class="cart-list" id="mobileCartList"></div>
+        <div id="mobileCartEmpty" style="color:var(--muted);text-align:center;padding:12px">No courses yet.</div>
+        <div style="display:flex;gap:8px;justify-content:space-between;margin-top:16px">
+          <button id="clearMobileCart" class="btn" title="Remove all"><i class="ti ti-trash"></i> Clear</button>
+          <button id="exportMobileCart" class="btn" title="Copy JSON"><i class="ti ti-code"></i> Export</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Routine Button -->
+  <div class="fab"><button id="openRoutine" class="btn btn-primary"><i class="ti ti-layout-grid"></i> View Routine</button></div>
+
+  <!-- Routine Overlay -->
+  <div class="routine-overlay" id="routineOverlay">
+    <div class="panel routine">
+      <header style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong><i class="ti ti-layout-grid"></i> Weekly Routine</strong> <span style="color:var(--muted)">(Sunday first)</span></div>
+        <div style="display:flex;gap:8px">
+          <button id="closeRoutine" class="btn btn-ghost"><i class="ti ti-x"></i> Close</button>
+          <button id="printRoutine" class="btn"><i class="ti ti-printer"></i> Print</button>
+        </div>
+      </header>
+      <div class="content">
+        <div id="timetable" class="timetable"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/customParseFormat.js"></script>
+  <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+
+<script>
+;(() => {
+  const API_URL = 'https://usis-cdn.eniamza.com/connect.json';
+  const REFRESH_MS = 30_000;
+
+  const els = {
+    cards: document.getElementById('cards'),
+    empty: document.getElementById('emptyState'),
+    lastUpdated: document.getElementById('lastUpdated'),
+    lastUpdatedMobile: document.getElementById('lastUpdatedMobile'),
+    search: document.getElementById('search'),
+    clearSearch: document.getElementById('clearSearch'),
+    toggleShowLabs: document.getElementById('toggleShowLabs'),
+    toggleOnlyVacant: document.getElementById('toggleOnlyVacant'),
+    toggleClashFree: document.getElementById('toggleClashFree'),
+    toggleDaySun: document.getElementById('toggleDaySun'),
+    toggleDayMon: document.getElementById('toggleDayMon'),
+    toggleDayTue: document.getElementById('toggleDayTue'),
+    toggleDayWed: document.getElementById('toggleDayWed'),
+    toggleDayThu: document.getElementById('toggleDayThu'),
+    cartList: document.getElementById('cartList'),
+    cartEmpty: document.getElementById('cartEmpty'),
+    clearCart: document.getElementById('clearCart'),
+    exportCart: document.getElementById('exportCart'),
+    // Mobile cart elements
+    openMobileCart: document.getElementById('openMobileCart'),
+    mobileCartOverlay: document.getElementById('mobileCartOverlay'),
+    closeMobileCart: document.getElementById('closeMobileCart'),
+    mobileCartList: document.getElementById('mobileCartList'),
+    mobileCartEmpty: document.getElementById('mobileCartEmpty'),
+    clearMobileCart: document.getElementById('clearMobileCart'),
+    exportMobileCart: document.getElementById('exportMobileCart'),
+    cartCount: document.getElementById('cartCount'),
+    // Routine elements
+    openRoutine: document.getElementById('openRoutine'),
+    routineOverlay: document.getElementById('routineOverlay'),
+    closeRoutine: document.getElementById('closeRoutine'),
+    printRoutine: document.getElementById('printRoutine'),
+    timetable: document.getElementById('timetable'),
+    // AI elements
+    aiCourseInput: document.getElementById('aiCourseInput'),
+    addCourse: document.getElementById('addCourse'),
+    coursesTags: document.getElementById('coursesTags'),
+    aiDaySelect: document.getElementById('aiDaySelect'),
+    addDay: document.getElementById('addDay'),
+    daysTags: document.getElementById('daysTags'),
+    aiFacultyInput: document.getElementById('aiFacultyInput'),
+    addFaculty: document.getElementById('addFaculty'),
+    facultyTags: document.getElementById('facultyTags'),
+    aiGo: document.getElementById('aiGo'),
+    aiClear: document.getElementById('aiClear'),
+    aiResults: document.getElementById('aiResults'),
+    closeAiResults: document.getElementById('closeAiResults'),
+    combinationResults: document.getElementById('combinationResults')
+  };
+
+  /*** State ***/
+  let rawData = [];
+  let viewData = [];
+  let fuse = null;
+  let filters = {
+    showLabs: false,
+    onlyVacant: false,
+    clashFree: false,
+    q: '',
+    days: { Sun: false, Mon: false, Tue: false, Wed: false, Thu: false }
+  };
+
+  // AI Search State
+  let aiCriteria = {
+    courses: [],
+    days: [],
+    faculties: []
+  };
+
+  const CART_KEY = 'brax_cart_v1';
+  let cart = new Map(); // key: sectionId, value: item
+
+  // Restore cart
+  try { JSON.parse(localStorage.getItem(CART_KEY) || '[]').forEach(x => cart.set(x.sectionId, x)); } catch {}
+
+  /*** Utilities ***/
+  const fmtTime = t => dayjs(t, 'HH:mm:ss').format('h:mm A');
+  const seatInfo = (cap, used) => {
+    const avail = Math.max(0, cap - used);
+    const pct = cap > 0 ? (avail / cap) * 100 : 0;
+    let cls = 'black', label = 'Full';
+    if (cap === 0) { cls = 'black'; label = 'N/A'; }
+    else if (avail === 0) { cls = 'black'; label = '0 left'; }
+    else if (pct < 10) { cls = 'red'; label = `${avail} left`; }
+    else if (pct < 50) { cls = 'orange'; label = `${avail} left`; }
+    else if (pct < 70) { cls = 'yellow'; label = `${avail} left`; }
+    else { cls = 'green'; label = `${avail} left`; }
+    return { cls, label, pct, avail };
+  };
+
+  const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const TIME_SLOTS = [
+    { start: '08:00 AM', end: '09:20 AM', row: 1 },
+    { start: '09:30 AM', end: '10:50 AM', row: 2 },
+    { start: '11:00 AM', end: '12:20 PM', row: 3 },
+    { start: '12:30 PM', end: '01:50 PM', row: 4 },
+    { start: '02:00 PM', end: '03:20 PM', row: 5 },
+    { start: '03:30 PM', end: '04:50 PM', row: 6 },
+    { start: '05:00 PM', end: '06:20 PM', row: 7 }
+  ];
+
+  function getDayIndex(day) {
+    const idx = DAYS.indexOf(day.toUpperCase());
+    return idx >= 0 ? idx + 1 : null; // +1 to skip time column
+  }
+
+  function getTimeSlot(startTime) {
+    const time = dayjs(startTime, ['h:mm A', 'HH:mm:ss']);
+    if (!time.isValid()) return null;
+    const slot = TIME_SLOTS.find(s => time.isSame(dayjs(s.start, 'h:mm A')));
+    return slot ? slot.row : null;
+  }
+
+  function overlaps(aStart, aEnd, bStart, bEnd) {
+    return aStart < bEnd && aEnd > bStart; // strict overlap
+  }
+
+  function scheduleConflicts(base, other) {
+    const times = (rec) => {
+      const out = [];
+      if (rec.sectionSchedule?.classSchedules) {
+        for (const s of rec.sectionSchedule.classSchedules) out.push({ day: s.day, start: s.startTime, end: s.endTime, type: 'class' });
+      }
+      if (rec.labSchedules) {
+        for (const s of rec.labSchedules) out.push({ day: s.day, start: s.startTime, end: s.endTime, type: 'lab' });
+      }
+      return out;
+    };
+    const A = times(base), B = times(other);
+    for (const a of A) for (const b of B) if (a.day === b.day) {
+      const aS = dayjs(a.start, 'HH:mm:ss'), aE = dayjs(a.end, 'HH:mm:ss');
+      const bS = dayjs(b.start, 'HH:mm:ss'), bE = dayjs(b.end, 'HH:mm:ss');
+      if (overlaps(aS, aE, bS, bE)) {
+        return { type: 'time', detail: `${a.day} ${a.start}-${a.end} clashes with ${b.start}-${b.end}` };
+      }
+    }
+    const exams = (rec) => [
+      rec.sectionSchedule?.midExamDate && { date: rec.sectionSchedule.midExamDate, start: rec.sectionSchedule.midExamStartTime, end: rec.sectionSchedule.midExamEndTime, label: 'Mid' },
+      rec.sectionSchedule?.finalExamDate && { date: rec.sectionSchedule.finalExamDate, start: rec.sectionSchedule.finalExamStartTime, end: rec.sectionSchedule.finalExamEndTime, label: 'Final' }
+    ].filter(Boolean);
+    for (const ea of exams(base)) for (const eb of exams(other)) if (ea.date === eb.date) {
+      const aS = dayjs(`${ea.date} ${ea.start}`), aE = dayjs(`${ea.date} ${ea.end}`);
+      const bS = dayjs(`${eb.date} ${eb.start}`), bE = dayjs(`${eb.date} ${eb.end}`);
+      if (overlaps(aS, bS, aE, bE)) return { type: 'exam', detail: `${ea.label} ${ea.date}` };
+    }
+    return null;
+  }
+
+  function conflictsWithCart(item) {
+    for (const entry of cart.values()) {
+      if (entry.courseCode === item.courseCode) return { type: 'duplicate', detail: 'Same course in cart' };
+      const clash = scheduleConflicts(entry, item);
+      if (clash) return clash;
+    }
+    return null;
+  }
+
+  /*** AI Search Functions ***/
+  function addAITag(container, value, type) {
+    const tag = document.createElement('div');
+    tag.className = 'ai-tag';
+    tag.innerHTML = `${value} <span class="remove">×</span>`;
+    tag.querySelector('.remove').addEventListener('click', () => {
+      aiCriteria[type] = aiCriteria[type].filter(x => x !== value);
+      tag.remove();
+    });
+    container.appendChild(tag);
+  }
+
+function performAISearch() {
+  if (!aiCriteria.courses.length) {
+    alert('Please enter at least one course code.');
+    return;
+  }
+
+  // group available sections by courseCode
+  const byCourse = {};
+  for (const item of rawData) {
+    if (!item.courseCode) continue;
+    const code = item.courseCode.toUpperCase();
+    if (aiCriteria.courses.some(c => code.startsWith(c.toUpperCase()))) {
+      if (!byCourse[code]) byCourse[code] = [];
+      byCourse[code].push(item);
+    }
+  }
+
+  // generate cart-friendly combos
+  const combos = [];
+  function backtrack(courseIdx, current) {
+    const codes = Object.keys(byCourse);
+    if (courseIdx >= codes.length) {
+      combos.push([...current]);
+      return;
+    }
+    const code = codes[courseIdx];
+    for (const section of byCourse[code]) {
+      // check for clashes with already chosen
+      const clash = current.some(c => scheduleConflicts(c, section));
+      if (!clash) {
+        current.push(section);
+        backtrack(courseIdx + 1, current);
+        current.pop();
+      }
+    }
+  }
+  backtrack(0, []);
+
+  displayAICombos(combos);
+}
+
+  function displayAICombos(combos) {
+  els.aiResults.style.display = 'block';
+  els.combinationResults.innerHTML = '';
+
+  if (!combos.length) {
+    els.combinationResults.innerHTML = `
+      <div class="match-header">
+        <i class="ti ti-alert-triangle" style="color:var(--danger)"></i>
+        No valid combinations found.
+      </div>`;
+    return;
+  }
+
+  els.combinationResults.innerHTML = `
+    <div class="match-header">
+      <i class="ti ti-layers-intersect" style="color:var(--brand-2)"></i>
+      Generated Combos (${combos.length})
+    </div>
+    <div class="cards"></div>
+  `;
+  const container = els.combinationResults.querySelector('.cards');
+
+  combos.slice(0, 8).forEach((combo, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card ai-result recommended';
+    card.innerHTML = `
+      <h3>Combo #${idx + 1}</h3>
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:6px">
+        ${combo.map(c => `${c.courseCode}-${c.sectionName}`).join(', ')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:auto">
+        <button class="btn btn-primary add-combo"><i class="ti ti-plus"></i> Add Combo</button>
+      </div>
+    `;
+    card.querySelector('.add-combo').addEventListener('click', () => {
+      combo.forEach(c => addToCart(c));
+    });
+    container.appendChild(card);
+  });
+}
+
+
+  function displayAIResults(exactMatches, partialMatches, recommendations) {
+    els.aiResults.style.display = 'block';
+
+    // Clear existing results
+    els.exactMatches.innerHTML = '';
+    els.partialMatches.innerHTML = '';
+    els.recommendations.innerHTML = '';
+
+    // Display exact matches
+    if (exactMatches.length > 0) {
+      els.exactMatches.innerHTML = `
+        <div class="match-header">
+          <i class="ti ti-target" style="color:var(--success)"></i>
+          Exact Matches (${exactMatches.length})
+        </div>
+        <div class="cards"></div>
+      `;
+      const container = els.exactMatches.querySelector('.cards');
+      exactMatches.slice(0, 6).forEach(item => {
+        const card = createAIResultCard(item, 'exact-match');
+        container.appendChild(card);
+      });
+    }
+
+    // Display partial matches
+    if (partialMatches.length > 0) {
+      els.partialMatches.innerHTML = `
+        <div class="match-header">
+          <i class="ti ti-target-arrow" style="color:var(--yellow)"></i>
+          Partial Matches (${partialMatches.length})
+        </div>
+        <div class="cards"></div>
+      `;
+      const container = els.partialMatches.querySelector('.cards');
+      partialMatches.slice(0, 6).forEach(item => {
+        const card = createAIResultCard(item, 'partial-match');
+        container.appendChild(card);
+      });
+    }
+
+    // Display recommendations
+    if (recommendations.length > 0) {
+      els.recommendations.innerHTML = `
+        <div class="match-header">
+          <i class="ti ti-bulb" style="color:var(--brand-2)"></i>
+          Recommendations (${recommendations.length})
+        </div>
+        <div class="cards"></div>
+      `;
+      const container = els.recommendations.querySelector('.cards');
+      recommendations.slice(0, 4).forEach(item => {
+        const card = createAIResultCard(item, 'recommended');
+        container.appendChild(card);
+      });
+    }
+
+    if (exactMatches.length === 0 && partialMatches.length === 0 && recommendations.length === 0) {
+      els.aiResults.innerHTML = `
+        <div class="ai-results-header">
+          <strong><i class="ti ti-search-off"></i> No Results Found</strong>
+          <button class="btn btn-ghost" id="closeAiResults"><i class="ti ti-x"></i></button>
+        </div>
+        <div style="text-align:center;padding:20px;color:var(--muted)">
+          <i class="ti ti-mood-sad" style="font-size:48px;opacity:.6"></i>
+          <div>No courses match your AI criteria. Try adjusting your search terms.</div>
+        </div>
+      `;
+      els.aiResults.querySelector('#closeAiResults').addEventListener('click', () => {
+        els.aiResults.style.display = 'none';
+      });
+    } else {
+      els.aiResults.querySelector('#closeAiResults').addEventListener('click', () => {
+        els.aiResults.style.display = 'none';
+      });
+    }
+  }
+
+  function createAIResultCard(item, matchClass) {
+    const cap = item.capacity || 0, used = item.consumedSeat || 0;
+    const seat = seatInfo(cap, used);
+    const cs = item.sectionSchedule?.classSchedules || [];
+    const ls = item.labSchedules || [];
+    const clash = conflictsWithCart(item);
+    const disabled = !!clash;
+
+    const card = document.createElement('div');
+    card.className = `card ai-result ${matchClass}${clash ? ' conflict' : ''}`;
+    
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <h3>${item.courseCode} <span style="color:var(--muted)">— Sec ${item.sectionName || ''}</span></h3>
+        <span class="badge seat ${seat.cls}" title="${seat.pct.toFixed(0)}% free">${seat.label}</span>
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:0.8rem;color:var(--brand);font-weight:500">
+          ${item.reasons.join(' • ')} (Score: ${item.score})
+        </div>
+      </div>
+      <div class="meta">
+        <span class="badge"><i class="ti ti-user"></i> ${item.faculties || 'TBA'}</span>
+        <span class="badge"><i class="ti ti-building"></i> ${item.roomName || '-'}</span>
+        ${item.labCourseCode ? `<span class="badge"><i class="ti ti-flask"></i> ${item.labCourseCode}</span>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${cs.map(s => `<div class="meta"><i class="ti ti-calendar"></i> ${s.day}: ${fmtTime(s.startTime)}–${fmtTime(s.endTime)}</div>`).join('') || '<div class="meta">No class time</div>'}
+        ${ls.map(s => `<div class="meta"><i class="ti ti-flask"></i> ${s.day}: ${fmtTime(s.startTime)}–${fmtTime(s.endTime)} (Lab)</div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:auto">
+        <button class="btn btn-primary add" ${disabled ? 'disabled' : ''} title="${clash ? ('Unavailable: ' + (clash.type === 'duplicate' ? 'Already in cart' : ('Clash (' + clash.detail + ')'))) : 'Add to cart'}"><i class="ti ti-plus"></i> Add</button>
+        <button class="btn btn-ghost info" title="Exam schedule"><i class="ti ti-calendar-time"></i> Exams</button>
+      </div>
+    `;
+
+    card.querySelector('.add').addEventListener('click', () => addToCart(item));
+    card.querySelector('.info').addEventListener('click', () => {
+      const mid = item.sectionSchedule?.midExamDetail || '–';
+      const fin = item.sectionSchedule?.finalExamDetail || '–';
+      alert(`${item.courseCode} Sec ${item.sectionName}\nMid: ${mid}\nFinal: ${fin}`);
+    });
+
+    return card;
+  }
+
+  /*** Fetch and prepare ***/
+  async function fetchData(signal) {
+    const res = await fetch(API_URL, { signal, cache: 'no-store' });
+    if (!res.ok) throw new Error('Network error');
+    const json = await res.json();
+    return Array.isArray(json) ? json : [];
+  }
+
+  function buildSearchIndex(data) {
+    fuse = new Fuse(data, {
+      keys: [
+        { name: 'courseCode', weight: 0.35 },
+        { name: 'sectionName', weight: 0.2 },
+        { name: 'labCourseCode', weight: 0.15 },
+        { name: 'faculties', weight: 0.1 },
+        { name: 'labName', weight: 0.05 },
+        { name: 'roomName', weight: 0.05 }
+      ],
+      threshold: 0.35, ignoreLocation: true, includeScore: false
+    });
+  }
+
+  function applyFilters() {
+    const q = filters.q.trim();
+    let list = rawData;
+    if (!filters.showLabs) list = list.filter(x => x.sectionType !== "LAB");
+    if (filters.onlyVacant) list = list.filter(x => (x.capacity - (x.consumedSeat || 0)) > 0);
+    if (filters.clashFree) list = list.filter(x => !conflictsWithCart(x));
+    if (Object.values(filters.days).some(v => v)) {
+      const activeDays = Object.keys(filters.days).filter(d => filters.days[d]).map(d => d.toUpperCase());
+      list = list.filter(x => {
+        const schedules = [...(x.sectionSchedule?.classSchedules || []), ...(x.labSchedules || [])];
+        return schedules.some(s => activeDays.includes(s.day));
+      });
+    }
+    if (q) list = fuse.search(q).map(r => r.item).filter(x => list.includes(x));
+    viewData = list;
+    renderCards();
+  }
+
+  function renderCards() {
+    const root = els.cards;
+    root.innerHTML = '';
+    if (!viewData.length) { els.empty.style.display = 'block'; return; }
+    els.empty.style.display = 'none';
+    const frag = document.createDocumentFragment();
+    for (const item of viewData) {
+      const cap = item.capacity || 0, used = item.consumedSeat || 0;
+      const seat = seatInfo(cap, used);
+      const cs = item.sectionSchedule?.classSchedules || [];
+      const ls = item.labSchedules || [];
+      const clash = conflictsWithCart(item);
+      const disabled = !!clash;
+      const card = document.createElement('div');
+      card.className = 'card' + (clash ? ' conflict' : '');
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <h3>${item.courseCode} <span style="color:var(--muted)">— Sec ${item.sectionName || ''}</span></h3>
+          <span class="badge seat ${seat.cls}" title="${seat.pct.toFixed(0)}% free">${seat.label}</span>
+        </div>
+        <div class="meta">
+          <span class="badge"><i class="ti ti-user"></i> ${item.faculties || 'TBA'}</span>
+          <span class="badge"><i class="ti ti-building"></i> ${item.roomName || '-'}</span>
+          ${item.labCourseCode ? `<span class="badge"><i class="ti ti-flask"></i> ${item.labCourseCode}</span>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${cs.map(s => `<div class="meta"><i class="ti ti-calendar"></i> ${s.day}: ${fmtTime(s.startTime)}–${fmtTime(s.endTime)}</div>`).join('') || '<div class="meta">No class time</div>'}
+          ${ls.map(s => `<div class="meta"><i class="ti ti-flask"></i> ${s.day}: ${fmtTime(s.startTime)}–${fmtTime(s.endTime)} (Lab)</div>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:auto">
+          <button class="btn btn-primary add" ${disabled ? 'disabled' : ''} title="${clash ? ('Unavailable: ' + (clash.type === 'duplicate' ? 'Already in cart' : ('Clash (' + clash.detail + ')'))) : 'Add to cart'}"><i class="ti ti-plus"></i> Add</button>
+          <button class="btn btn-ghost info" title="Exam schedule"><i class="ti ti-calendar-time"></i> Exams</button>
+        </div>
+      `;
+      card.querySelector('.add').addEventListener('click', () => addToCart(item));
+      card.querySelector('.info').addEventListener('click', () => {
+        const mid = item.sectionSchedule?.midExamDetail || '–';
+        const fin = item.sectionSchedule?.finalExamDetail || '–';
+        alert(`${item.courseCode} Sec ${item.sectionName}\nMid: ${mid}\nFinal: ${fin}`);
+      });
+      frag.appendChild(card);
+    }
+    requestAnimationFrame(() => root.appendChild(frag));
+  }
+
+  function renderCart() {
+    updateCartCount();
+    
+    // Desktop cart
+    const list = els.cartList;
+    list.innerHTML = '';
+    if (!cart.size) { els.cartEmpty.style.display = 'block'; } else { els.cartEmpty.style.display = 'none'; }
+    
+    // Mobile cart
+    const mobileList = els.mobileCartList;
+    mobileList.innerHTML = '';
+    if (!cart.size) { els.mobileCartEmpty.style.display = 'block'; } else { els.mobileCartEmpty.style.display = 'none'; }
+
+    const frag = document.createDocumentFragment();
+    const mobileFrag = document.createDocumentFragment();
+    
+    for (const item of cart.values()) {
+      // Desktop cart item
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      const cs = item.sectionSchedule?.classSchedules || [];
+      const ls = item.labSchedules || [];
+      row.innerHTML = `
+        <div>
+          <div style="font-weight:600">${item.courseCode} — Sec ${item.sectionName}</div>
+          <div class="meta">${[...cs.map(s => `${s.day} ${fmtTime(s.startTime)}–${fmtTime(s.endTime)}`), ...ls.map(s => `${s.day} ${fmtTime(s.startTime)}–${fmtTime(s.endTime)} (Lab)`)].join(' • ') || 'No schedule'}</div>
+        </div>
+        <div class="remove" title="Remove"><i class="ti ti-trash"></i></div>
+      `;
+      row.querySelector('.remove').addEventListener('click', () => removeFromCart(item.sectionId));
+      frag.appendChild(row);
+
+      // Mobile cart item (clone)
+      const mobileRow = row.cloneNode(true);
+      mobileRow.querySelector('.remove').addEventListener('click', () => removeFromCart(item.sectionId));
+      mobileFrag.appendChild(mobileRow);
+    }
+    
+    requestAnimationFrame(() => {
+      list.appendChild(frag);
+      mobileList.appendChild(mobileFrag);
+    });
+  }
+
+  function updateCartCount() {
+    els.cartCount.textContent = cart.size;
+  }
+
+  function removeFromCart(sectionId) {
+    cart.delete(sectionId);
+    persistCart();
+    renderCart();
+    applyFilters();
+    buildRoutine();
+  }
+
+  function persistCart() {
+    localStorage.setItem(CART_KEY, JSON.stringify([...cart.values()]));
+  }
+
+  function addToCart(item) {
+    const clash = conflictsWithCart(item);
+    if (clash) { alert(clash.type === 'duplicate' ? 'This course is already in your cart.' : 'Time conflict: ' + clash.detail); return; }
+    cart.set(item.sectionId, item);
+    persistCart();
+    renderCart();
+    applyFilters();
+    buildRoutine();
+  }
+
+  /*** Routine builder ***/
+  function buildRoutine() {
+    const grid = els.timetable;
+    grid.innerHTML = '';
+
+    // Build header
+    const header = document.createElement('div');
+    header.className = 'tt-header';
+    header.innerHTML = ['Time', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(x => `<div>${x}</div>`).join('');
+    grid.appendChild(header);
+
+    // Build rows
+    const rowEls = [];
+    TIME_SLOTS.forEach((slot, idx) => {
+      const row = document.createElement('div');
+      row.className = 'tt-row';
+      row.innerHTML = `
+        <div class="timecell">${slot.start}–${slot.end}</div>
+        <div data-day="SUNDAY" data-row="${idx + 1}"></div>
+        <div data-day="MONDAY" data-row="${idx + 1}"></div>
+        <div data-day="TUESDAY" data-row="${idx + 1}"></div>
+        <div data-day="WEDNESDAY" data-row="${idx + 1}"></div>
+        <div data-day="THURSDAY" data-row="${idx + 1}"></div>
+        <div data-day="FRIDAY" data-row="${idx + 1}"></div>
+        <div data-day="SATURDAY" data-row="${idx + 1}"></div>
+      `;
+      rowEls.push(row);
+      grid.appendChild(row);
+    });
+
+    // Place blocks
+    for (const item of cart.values()) {
+      const cs = item.sectionSchedule?.classSchedules || [];
+      const ls = item.labSchedules || [];
+      [...cs, ...ls].forEach((schedule, idx) => {
+        const isLab = idx >= cs.length;
+        const timeSlot = getTimeSlot(schedule.startTime);
+        const dayIdx = getDayIndex(schedule.day);
+        if (timeSlot && dayIdx) {
+          const cell = rowEls[timeSlot - 1].children[dayIdx];
+          const el = document.createElement('div');
+          el.className = 'slot' + (isLab ? ' lab' : '');
+          el.innerHTML = `
+            <div style="font-weight:700">${item.courseCode}${isLab ? 'L' : ''} — Sec ${item.sectionName}</div>
+            <div>${item.faculties || 'TBA'}</div>
+            <div>${item.roomName || '-'}</div>
+            <div>${fmtTime(schedule.startTime)}–${fmtTime(schedule.endTime)}</div>
+          `;
+          cell.appendChild(el);
+        }
+      });
+    }
+  }
+
+  /*** Event Listeners ***/
+  
+  // AI Search Events
+  els.addCourse.addEventListener('click', () => {
+    const value = els.aiCourseInput.value.trim();
+    if (value && !aiCriteria.courses.includes(value)) {
+      aiCriteria.courses.push(value);
+      addAITag(els.coursesTags, value, 'courses');
+      els.aiCourseInput.value = '';
+    }
+  });
+
+  els.aiCourseInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') els.addCourse.click();
+  });
+
+  els.addDay.addEventListener('click', () => {
+    const value = els.aiDaySelect.value;
+    if (value && !aiCriteria.days.includes(value)) {
+      aiCriteria.days.push(value);
+      addAITag(els.daysTags, value, 'days');
+      els.aiDaySelect.value = '';
+    }
+  });
+
+  els.addFaculty.addEventListener('click', () => {
+    const value = els.aiFacultyInput.value.trim();
+    if (value && !aiCriteria.faculties.includes(value)) {
+      aiCriteria.faculties.push(value);
+      addAITag(els.facultyTags, value, 'faculties');
+      els.aiFacultyInput.value = '';
+    }
+  });
+
+  els.aiFacultyInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') els.addFaculty.click();
+  });
+
+  els.aiGo.addEventListener('click', performAISearch);
+
+  els.aiClear.addEventListener('click', () => {
+    aiCriteria = { courses: [], days: [], faculties: [] };
+    els.coursesTags.innerHTML = '';
+    els.daysTags.innerHTML = '';
+    els.facultyTags.innerHTML = '';
+    els.aiCourseInput.value = '';
+    els.aiFacultyInput.value = '';
+    els.aiDaySelect.value = '';
+    els.aiResults.style.display = 'none';
+  });
+
+  els.closeAiResults.addEventListener('click', () => {
+    els.aiResults.style.display = 'none';
+  });
+
+  // Mobile Cart Events
+  els.openMobileCart.addEventListener('click', () => {
+    els.mobileCartOverlay.style.display = 'flex';
+  });
+
+  els.closeMobileCart.addEventListener('click', () => {
+    els.mobileCartOverlay.style.display = 'none';
+  });
+
+  els.mobileCartOverlay.addEventListener('click', (e) => {
+    if (e.target === els.mobileCartOverlay) {
+      els.mobileCartOverlay.style.display = 'none';
+    }
+  });
+
+  // Search & filter events
+  els.search.addEventListener('input', debounce(() => { filters.q = els.search.value; applyFilters(); }, 120));
+  els.clearSearch.addEventListener('click', () => { els.search.value = ''; filters.q = ''; applyFilters(); els.search.focus(); });
+  toggleChip(els.toggleShowLabs, 'showLabs');
+  toggleChip(els.toggleOnlyVacant, 'onlyVacant');
+  toggleChip(els.toggleClashFree, 'clashFree');
+  toggleChip(els.toggleDaySun, 'days.Sun');
+  toggleChip(els.toggleDayMon, 'days.Mon');
+  toggleChip(els.toggleDayTue, 'days.Tue');
+  toggleChip(els.toggleDayWed, 'days.Wed');
+  toggleChip(els.toggleDayThu, 'days.Thu');
+
+  function toggleChip(el, key) {
+    const on = JSON.parse(localStorage.getItem('chip_' + key) || 'false');
+    setFilter(key, on);
+    styleChip(el, on);
+    el.addEventListener('click', () => {
+      const newVal = !getFilter(key);
+      setFilter(key, newVal);
+      localStorage.setItem('chip_' + key, JSON.stringify(newVal));
+      styleChip(el, newVal);
+      applyFilters();
+    });
+  }
+
+  function getFilter(key) {
+    return key.split('.').reduce((o, k) => o[k], filters);
+  }
+
+  function setFilter(key, value) {
+    const keys = key.split('.');
+    if (keys.length === 1) filters[keys[0]] = value;
+    else filters[keys[0]][keys[1]] = value;
+  }
+
+  function styleChip(el, on) {
+    el.style.background = on ? '#142033' : 'transparent';
+    el.style.color = on ? '#cfe6ff' : 'var(--muted)';
+    el.style.borderColor = on ? '#254066' : 'var(--border)';
+  }
+
+  // Cart Events
+  els.clearCart.addEventListener('click', () => {
+    if (confirm('Clear all courses from cart?')) {
+      cart.clear();
+      persistCart();
+      renderCart();
+      applyFilters();
+      buildRoutine();
+    }
+  });
+
+  els.clearMobileCart.addEventListener('click', () => {
+    if (confirm('Clear all courses from cart?')) {
+      cart.clear();
+      persistCart();
+      renderCart();
+      applyFilters();
+      buildRoutine();
+    }
+  });
+
+  els.exportCart.addEventListener('click', () => {
+    navigator.clipboard.writeText(JSON.stringify([...cart.values()], null, 2));
+    alert('Cart JSON copied to clipboard');
+  });
+
+  els.exportMobileCart.addEventListener('click', () => {
+    navigator.clipboard.writeText(JSON.stringify([...cart.values()], null, 2));
+    alert('Cart JSON copied to clipboard');
+  });
+
+  // Routine Events
+  els.openRoutine.addEventListener('click', () => {
+    els.routineOverlay.style.display = 'flex';
+    buildRoutine();
+  });
+
+  els.closeRoutine.addEventListener('click', () => els.routineOverlay.style.display = 'none');
+  
+  els.routineOverlay.addEventListener('click', (e) => {
+    if (e.target === els.routineOverlay) {
+      els.routineOverlay.style.display = 'none';
+    }
+  });
+
+  els.printRoutine.addEventListener('click', () => window.print());
+
+  /*** Refresh loop ***/
+  async function refresh() {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 10_000);
+    try {
+      const data = await fetchData(ctl.signal);
+      rawData = data;
+      buildSearchIndex(data);
+      applyFilters();
+      renderCart();
+      setUpdated();
+    } catch (err) { console.warn('Fetch failed', err); }
+    finally { clearTimeout(t); }
+  }
+
+  function setUpdated() {
+    const ts = new Date();
+    const txt = `Updated ${ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    els.lastUpdated.textContent = txt;
+    els.lastUpdatedMobile.textContent = txt;
+  }
+
+  function loop() { refresh(); setInterval(refresh, REFRESH_MS); }
+
+  /*** Helpers ***/
+  function debounce(fn, ms) {
+    let h;
+    return (...a) => {
+      clearTimeout(h);
+      h = setTimeout(() => fn(...a), ms);
+    };
+  }
+
+  // Init
+  loop();
+})();
+</script>
+<style>body{margin:0;overflow:hidden}#intro{position:fixed;top:0;left:0;width:100vw;height:100vh;background:black;display:flex;justify-content:center;align-items:center;z-index:9999;opacity:1;animation:fadeOut .5s ease-in-out forwards;animation-delay:0.5s}#intro img{width:150px;animation:pulse 1s infinite}@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.01);opacity:.7}}@keyframes fadeOut{from{opacity:1}to{opacity:0;visibility:hidden}}</style><div id="intro"><img src="https://dewanmukto.github.io/asset/images/classic_logo.png" alt="Logo"></div><script>document.getElementById("intro").addEventListener("animationend",()=>{document.getElementById("intro").style.display="none";document.body.style.overflow="auto"});</script>
+</body>
+</html>
